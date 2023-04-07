@@ -6,5 +6,10 @@ export default defineNuxtConfig({
     ],
     auth: {
         enableGlobalAppMiddleware: true,
-    }
+    },
+    build: {
+        transpile: [
+            "trpc-nuxt",
+        ],
+    },
 })
