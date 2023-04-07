@@ -2,8 +2,37 @@ import { createNuxtApiHandler } from "trpc-nuxt";
 import { protectedProcedure, publicProcedure, router } from "~/server/trpc/trpc";
 import { createContext } from "~/server/trpc/context";
 import { TRPCError } from "@trpc/server";
+import {z} from "zod";
+import bcrypt from "bcrypt";
 
 export const appRouter = router({
+    registerUser: publicProcedure
+        .input(
+            z.object({
+                email: z.string().email(),
+                password: z.string().min(8),
+                passwordConfirm: z.string().min(8)
+            })
+            .refine(data => data.password === data.passwordConfirm, {
+                message: "Passwords don't match",
+                path: ["passwordConfirm"],
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            // TODO: load slatRounds from config.
+            const encrypted_password = await bcrypt.hash(input.password, 10);
+  
+            const dbUser = await ctx.prisma.user.create({
+                data: {
+                    email: input.email,
+                    password: encrypted_password,
+                }
+            });
+
+            return {
+                id: dbUser.id
+            };
+        }),
     hello: publicProcedure
         .query(({ ctx }) => {
             let greeting = "Hello, fellow unknown";

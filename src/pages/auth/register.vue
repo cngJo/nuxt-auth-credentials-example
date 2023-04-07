@@ -6,32 +6,39 @@ definePageMeta({
     }
 })
 
-const userData = ref<{email: string, password: string}>({
+const { $client } = useNuxtApp();
+const { signIn } = useAuth();
+
+const userData = ref<{email: string, password: string, passwordConfirm: string}>({
     email: "",
     password: "",
+    passwordConfirm: "",
 });
 
 const onSubmit = async () => {
-    const response = await useFetch("/api/auth/register-user", {
-        method: "POST",
-        body: { ...userData.value },
-    });
+    // FIXME: Replace error handling with useMutation
+    //          See: https://github.com/wobsoriano/trpc-nuxt/issues/57 
+    $client.registerUser.mutate(userData.value)
+        .catch(() => alert("Could not create user"))
+        .then(() => {
+            const user = userData.value;
 
-    if (response.error.value === null) {
-        useRouter().push("/");
-    } else {
-        alert("Could not create user");
-        console.log(response.error.value);
-    }
-}
+            signIn("credentials", {
+                email: user.email,
+                password: user.password,
+            });
+        });
+} 
 
 </script>
 <template>
     <form @submit.prevent="onSubmit">
         <label for="username">Username</label>
         <input v-model="userData.email" type="text" name="username" id="username">
-        <label for="username">Password</label>
+        <label for="password">Password</label>
         <input v-model="userData.password" type="password" name="password" id="password">
+        <label for="password-confirm">Confirm Password</label>
+        <input v-model="userData.passwordConfirm" type="password" name="password" id="password-confirm">
         <input type="submit">
     </form>
 </template>
