@@ -1,4 +1,10 @@
 <script lang="ts" setup>
+definePageMeta({
+    auth: {
+        unauthenticatedOnly: true,
+        navigateAuthenticatedTo: '/',
+    }
+})
 
 const userData = ref<{email: string, password: string}>({
     email: "",

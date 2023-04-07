@@ -3,5 +3,8 @@ export default defineNuxtConfig({
     srcDir: "src",
     modules: [
         "@sidebase/nuxt-auth",
-    ]
+    ],
+    auth: {
+        enableGlobalAppMiddleware: true,
+    }
 })
